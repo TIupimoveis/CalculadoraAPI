@@ -44,7 +44,8 @@ router.post('/', authMiddleware, async (req: any, res: any) => {
     const valorInicial = dados.valorLocacao + dados.valorTaxas
     const valorOriginal = valorInicial * 4
     const valorComDesconto = valorOriginal * 0.75
-    const valorCorrigido = valorComDesconto * (1 + dados.taxaPoupanca)
+  // Removido acréscimo de taxaPoupanca: valorCorrigido agora é igual ao valor com desconto
+  const valorCorrigido = valorComDesconto
 
     // Criar o cálculo associado ao usuário logado
     const calculo = await req.prisma.calculo.create({
