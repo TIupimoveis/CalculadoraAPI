@@ -15,7 +15,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://calculdora-ten.vercel.app' // domínio do frontend Vercel
+    'https://calculadora-up.vercel.app/' // domínio do frontend Vercel
   ],
   credentials: true
 }))
