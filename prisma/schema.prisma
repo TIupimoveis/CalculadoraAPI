@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      String   @default("user") // "admin" ou "user"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamento com cálculos
+  calculos  Calculo[]
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nome      String
+  telefone  String
+  cpf       String   @unique
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamento com cálculos
+  calculos  Calculo[]
+
+  @@map("clientes")
+}
+
+model Calculo {
+  id                String   @id @default(cuid())
+  
+  // Valores de entrada
+  valorLocacao      Float
+  valorTaxas        Float
+  
+  // Valores calculados
+  valorInicial      Float    // valorLocacao + valorTaxas
+  valorOriginal     Float    // valorInicial * 4
+  valorComDesconto  Float    // valorOriginal * 0.75
+  valorCorrigido    Float    // valorComDesconto * (1 + taxaPoupanca)
+  
+  // Taxa aplicada
+  taxaPoupanca      Float    @default(0.005) // 0.5% padrão
+  
+  // Relacionamentos
+  clienteId         String
+  cliente           Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  
+  usuarioId         String?
+  usuario           Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("calculos")
+}
