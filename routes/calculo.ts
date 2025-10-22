@@ -92,19 +92,31 @@ router.post('/', authMiddleware, async (req: any, res: any) => {
 // GET /api/calculos - Listar cálculos (filtrados por usuário se não for admin)
 router.get('/', authMiddleware, async (req: any, res: any) => {
   try {
-    const { page = 1, limit = 50, clienteId } = req.query
+    const { page = 1, limit = 50, clienteId, usuarioId } = req.query
 
-    // Admins veem todos os cálculos, usuários veem apenas os seus
-    let where: any = clienteId ? { clienteId } : {}
-    
+    // Montar filtro onde
+    let where: any = {}
+    if (clienteId) where.clienteId = clienteId
+
+    // Se não for admin, restringir sempre aos cálculos do próprio usuário
     if (req.usuario.role !== 'admin') {
       where.usuarioId = req.usuario.id
+    } else {
+      // Se for admin, permitir filtrar por usuário específico (usuarioId)
+      if (usuarioId) where.usuarioId = usuarioId
     }
 
     const calculos = await req.prisma.calculo.findMany({
       where,
       include: {
-        cliente: true
+        cliente: true,
+        usuario: {
+          select: {
+            id: true,
+            nome: true,
+            email: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -113,7 +125,7 @@ router.get('/', authMiddleware, async (req: any, res: any) => {
       take: Number(limit)
     })
 
-    const total = await req.prisma.calculo.count({ where })
+  const total = await req.prisma.calculo.count({ where })
 
     res.json({
       success: true,
